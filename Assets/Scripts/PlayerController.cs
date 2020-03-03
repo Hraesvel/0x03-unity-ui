@@ -16,41 +16,38 @@ public class PlayerController : MonoBehaviour
     private int score = 0;
     public int health = 5;
     private float _startHealth;
-    
-    private Text _scoreText;
-    private Text _healthText;
+
+    public Text scoreText;
+    public Text healthText;
+
+    private Image _healthTextBG;
     private Gradient _healthColor;
 
-    public Color healthStart = Color.green;
-    public Color healthEnd = Color.red;
+    public Color healthStart = Color.red;
+    public Color healthEnd = Color.black;
 
 
     // Start is called before the first frame update
     void Start()
     {
-       
         _healthColor = new Gradient();
-        
+
         var colorkey = new GradientColorKey[2];
-        
+
         colorkey[0].color = healthStart;
         colorkey[0].time = 1f;
         colorkey[1].color = healthEnd;
         colorkey[1].time = 0f;
-        
+
         _healthColor.colorKeys = colorkey;
+        _healthTextBG = healthText.transform.parent.GetComponent<Image>();
 
 
-
-        _healthText = hud.transform.Find("Health").GetComponent<UnityEngine.UI.Text>();
-        _scoreText = hud.transform.Find("Score").GetComponent<UnityEngine.UI.Text>();
-
-        _scoreText.text = "Score: " + score;
-        _healthText.text = "Health: " + health;
-        _healthText.color = _healthColor.Evaluate(1);
+        scoreText.text = "Score: " + score;
+        healthText.text = "Health: " + health;
+        _healthTextBG.color = _healthColor.Evaluate(1);
 
         _startHealth = health;
-
     }
 
     private void Update()
@@ -61,13 +58,13 @@ public class PlayerController : MonoBehaviour
             SceneManager.LoadScene("maze");
         }
     }
+
     private void FixedUpdate()
     {
         _direction.Set(0, 0, 0);
 
         if (UpdateDirection(ref _direction))
             GetComponent<Rigidbody>().AddForce((_direction * speed));
-
     }
 
     private static bool UpdateDirection(ref Vector3 dir)
@@ -97,33 +94,45 @@ public class PlayerController : MonoBehaviour
         }
 
         return true;
-
     }
 
     void OnTriggerEnter(Collider other)
     {
-
         if (other.CompareTag("Pickup"))
         {
             score += 1;
-            _scoreText.text = "Score: " + score;
-            Debug.Log("Score: " + score);
+            SetScoreText();
             Destroy(other.gameObject);
         }
 
         if (other.CompareTag("Trap"))
         {
             health -= 1;
-            _healthText.text = "Health: " + health;
-            _healthText.color = _healthColor.Evaluate(health / _startHealth);
-            Debug.Log("Health: " + health);
+            SetHealthText(); 
+           
+            
         }
 
         if (other.CompareTag("Goal"))
         {
             Debug.Log("You win!");
         }
-
     }
 
+    void SetScoreText()
+    {
+        scoreText.text = "Score: " + score;
+#if UNITY_EDITOR
+        Debug.Log("Score: " + score);
+#endif
+    }
+
+    void SetHealthText()
+    {
+        healthText.text = "Health: " + health;
+        _healthTextBG.color = _healthColor.Evaluate(health / _startHealth);
+#if UNITY_EDITOR
+        Debug.Log("Health: " + health);
+#endif
+    }
 }
