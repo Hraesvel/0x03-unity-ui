@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -19,9 +20,14 @@ public class PlayerController : MonoBehaviour
 
     public Text scoreText;
     public Text healthText;
+    public Text winLoseText;
+    public Image _winLoseBg;
 
     private Image _healthTextBG;
     private Gradient _healthColor;
+
+    [Tooltip("Allow the Health Background color to shift based on the gradient")]
+    public bool allowHpClrChange = true;
 
     public Color healthStart = Color.red;
     public Color healthEnd = Color.black;
@@ -33,29 +39,36 @@ public class PlayerController : MonoBehaviour
         _healthColor = new Gradient();
 
         var colorkey = new GradientColorKey[2];
-
         colorkey[0].color = healthStart;
         colorkey[0].time = 1f;
         colorkey[1].color = healthEnd;
         colorkey[1].time = 0f;
-
         _healthColor.colorKeys = colorkey;
         _healthTextBG = healthText.transform.parent.GetComponent<Image>();
+        _winLoseBg = winLoseText.transform.parent.GetComponent<Image>();
 
+
+        _winLoseBg.gameObject.SetActive(false);
 
         scoreText.text = "Score: " + score;
         healthText.text = "Health: " + health;
         _healthTextBG.color = _healthColor.Evaluate(1);
-
         _startHealth = health;
     }
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            SceneManager.LoadScene("menu");
+
         if (health == 0)
         {
-            Debug.Log("Game Over!");
-            SceneManager.LoadScene("maze");
+            winLoseText.text = "Game Over!";
+            winLoseText.color = Color.white;
+            _winLoseBg.color = Color.red;
+            _winLoseBg.gameObject.SetActive(true);
+            StartCoroutine(LoadScene(3.0f));
+            // Debug.Log("Game Over!");
         }
     }
 
@@ -108,31 +121,39 @@ public class PlayerController : MonoBehaviour
         if (other.CompareTag("Trap"))
         {
             health -= 1;
-            SetHealthText(); 
-           
-            
+            SetHealthText();
         }
 
         if (other.CompareTag("Goal"))
         {
-            Debug.Log("You win!");
+            winLoseText.text = "You Win!";
+            winLoseText.color = Color.black;
+            _winLoseBg.color = Color.green;
+            _winLoseBg.gameObject.SetActive(true);
+            StartCoroutine(LoadScene(3.0f));
+
+
+            // Debug.Log("You win!");
         }
     }
 
     void SetScoreText()
     {
         scoreText.text = "Score: " + score;
-#if UNITY_EDITOR
-        Debug.Log("Score: " + score);
-#endif
+        // Debug.Log("Score: " + score);
     }
 
     void SetHealthText()
     {
         healthText.text = "Health: " + health;
-        _healthTextBG.color = _healthColor.Evaluate(health / _startHealth);
-#if UNITY_EDITOR
-        Debug.Log("Health: " + health);
-#endif
+        if (allowHpClrChange)
+            _healthTextBG.color = _healthColor.Evaluate(health / _startHealth);
+        // Debug.Log("Health: " + health);
+    }
+
+    IEnumerator LoadScene(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        SceneManager.LoadScene("maze");
     }
 }
