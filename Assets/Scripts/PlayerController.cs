@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
     public Text scoreText;
     public Text healthText;
     public Text winLoseText;
-    public Image _winLoseBg;
+    private Image _winLoseBg;
 
     private Image _healthTextBG;
     private Gradient _healthColor;
@@ -43,6 +43,7 @@ public class PlayerController : MonoBehaviour
         colorkey[0].time = 1f;
         colorkey[1].color = healthEnd;
         colorkey[1].time = 0f;
+        
         _healthColor.colorKeys = colorkey;
         _healthTextBG = healthText.transform.parent.GetComponent<Image>();
         _winLoseBg = winLoseText.transform.parent.GetComponent<Image>();
